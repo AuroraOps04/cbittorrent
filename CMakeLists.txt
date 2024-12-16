@@ -9,4 +9,5 @@ set(CMAKE_CXX_STANDARD c99)
 add_executable(
   ${PROJECT_NAME}
   main.c
+  torrentfile.c
 )
