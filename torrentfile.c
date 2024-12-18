@@ -1,4 +1,5 @@
 #include "torrentfile.h"
+#include <openssl/evp.h>
 #include <openssl/sha.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -105,10 +106,11 @@ int get_infohash() {
   if (i == torrentfile_size)
     return -1;
 
-  SHA_CTX ctx;
-  SHA1_Init(&ctx);
-  SHA1_Update(&ctx, &torrentfile_content[begin], end - begin + 1);
-  SHA1_Final(info_hash, &ctx);
+  EVP_MD_CTX *ctx = EVP_MD_CTX_new();
+  EVP_DigestInit_ex(ctx, EVP_sha1(), NULL);
+  EVP_DigestUpdate(ctx, torrentfile_content + begin, end - begin + 1);
+  EVP_DigestFinal_ex(ctx, info_hash, NULL);
+  EVP_MD_CTX_free(ctx);
 
   printf("info_hash: ");
   for (int i = 0; i < 20; i++) {
