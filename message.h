@@ -11,11 +11,19 @@ int create_chock_interested_msg(int type, Peer *peer);
 int create_have_msg(int index, Peer *peer);
 int crate_bitfield_msg(char *bitfield, int bitfield_len, Peer *peer);
 int create_request_msg(int index, int begin, int length, Peer *peer);
-int create_piece_msg(int index, int begin, int length, Peer *peer);
+int create_piece_msg(int index, int begin, unsigned char *block, int b_len,
+                     Peer *peer);
 int create_cancel_msg(int index, int begin, int length, Peer *peer);
 int create_port_msg(int port, Peer *peer);
 
-// 判断接收缓冲区内是否存放了一条完整的消息
+/**
+ * @brief  判断接收缓冲区内是否存放了一条完整的消息
+ *
+ * @param buff
+ * @param ok_len 需要设置的第一条完整消息长度
+ *
+ * @return 有完整消息返回 0 ，否则返回 -1
+ */
 int is_complete_message(unsigned char *buff, unsigned int len, int *ok_len);
 // 处理收到的消息， 接收缓冲区内存放着一条完整的消息
 int parse_response(Peer *peer);
