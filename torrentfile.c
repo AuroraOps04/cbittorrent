@@ -3,11 +3,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 long torrentfile_size = 0;
 char *torrentfile_content = NULL;
 char *filename = NULL;
 unsigned char info_hash[20];
+int piece_length = 0; //
+unsigned char *pieces = NULL;
+int pieces_length = 0;
+long long file_length = 0;
+char peer_id[20];
 
+Files *files = NULL;
 Announce_list *announce_list_head = NULL;
 
 int read_torrentfile(const char *filename) {
@@ -196,6 +203,213 @@ int get_announce_list() {
   return 0;
 }
 
+int get_piece_lenght() {
+  if (torrentfile_content == NULL) {
+    return -1;
+  }
+  int i = 0;
+  const char *k = "12:piece length";
+  if (find_keyword(k, &i) < 0) {
+    return -1;
+  }
+  i += strlen(k);
+  i++; // skip 'i'
+  piece_length = 0;
+  while (torrentfile_content[i] != 'e') {
+    piece_length = piece_length * 10 + torrentfile_content[i] - '0';
+    i++;
+  }
+  printf("piece length: %d\n", piece_length);
+  return 0;
+}
+
+int get_pieces() {
+  if (torrentfile_content == NULL) {
+    return -1;
+  }
+  int i = 0;
+  const char *k = "6:pieces";
+  if (find_keyword(k, &i) < 0) {
+    return -1;
+  }
+  i += strlen(k);
+
+  pieces_length = 0;
+  while (torrentfile_content[i] >= '0' && torrentfile_content[i] <= '9') {
+    pieces_length = pieces_length * 10 + torrentfile_content[i] - '0';
+    i++;
+  }
+  i++;
+  pieces = (unsigned char *)malloc(pieces_length);
+  memcpy(pieces, &torrentfile_content[i], pieces_length);
+
+  return 0;
+}
+int is_multi_file() {
+  if (torrentfile_content == NULL) {
+    return -1;
+  }
+  int i;
+  if (find_keyword("5:files", &i) < 0) {
+    return 0;
+  }
+  return 1;
+}
+
+int get_file_length() {
+  if (torrentfile_content == NULL)
+    return -1;
+
+  int i;
+  const char *k = "6:length";
+  if (is_multi_file() == 1) {
+    if (get_files_length_path() < 0)
+      return -1;
+    file_length = 0;
+    Files *p = files;
+    while (p != NULL) {
+      file_length += p->length;
+      p = p->next;
+    }
+  } else {
+    if (find_keyword(k, &i) < 0) {
+      return -1;
+    }
+    i += strlen(k);
+    i++; // skip 'i'
+    file_length = 0;
+    while (torrentfile_content[i] != 'e') {
+      file_length = file_length * 10 + torrentfile_content[i] - '0';
+      i++;
+    }
+  }
+
+  printf("file_length %lld\n", file_length);
+  return 0;
+}
+int get_files_length_path() {
+  if (torrentfile_content == NULL) {
+    return -1;
+  }
+  if (is_multi_file() == 0)
+    return 0;
+
+  for (int i = 0; i < torrentfile_size; i++) {
+    if (memcmp(&torrentfile_content[i], "6:length", 8) == 0) {
+      i += 8;
+      i++; // skip 'i'
+      Files *n = (Files *)malloc(sizeof(Files));
+      n->next = NULL;
+      n->length = 0;
+      while (torrentfile_content[i] != 'e') {
+        n->length = n->length * 10 + torrentfile_content[i] - '0';
+        i++;
+      }
+      if (files == NULL)
+        files = n;
+      else {
+        Files *p = files;
+        while (p->next != NULL) {
+          p = p->next;
+        }
+        p->next = n;
+      }
+
+    } else if (memcmp(&torrentfile_content[i], "4:path", 6) == 0) {
+      i += 6;
+      i++; // skip 'l'
+      int count = 0;
+      while (torrentfile_content[i] >= '0' && torrentfile_content[i] <= '9') {
+        count = count * 10 + torrentfile_content[i] - '0';
+        i++;
+      }
+      i++; // skip ':'
+      Files *p = files;
+      if (p == NULL)
+        return -1;
+      while (p->next != NULL) {
+        p = p->next;
+      }
+      memcpy(p->path, &torrentfile_content[i], count);
+      *(p->path + count) = 0;
+    }
+  }
+
+  if (files != NULL) {
+    Files *p = files;
+    while (p != NULL) {
+      printf("path: %s length:%ld\n", p->path, p->length);
+      p = p->next;
+    }
+  }
+
+  return 0;
+}
+int get_peerid() {
+  srand(time(NULL));
+  sprintf(peer_id, "-TT1000-%11d", rand());
+  printf("peer_id %s\n", peer_id);
+  return 0;
+}
+
+int parse_torrentfile(const char *filename) {
+  int ret;
+  ret = read_torrentfile(filename);
+  if (ret < 0) {
+    printf("%s %d wrong\n", __FILE__, __LINE__);
+    return -1;
+  }
+
+  ret = get_announce_list();
+  if (ret < 0) {
+    printf("%s %d wrong\n", __FILE__, __LINE__);
+    return -1;
+  }
+
+  ret = is_multi_file();
+  if (ret < 0) {
+    printf("%s %d wrong\n", __FILE__, __LINE__);
+    return -1;
+  }
+
+  ret = get_piece_lenght();
+  if (ret < 0) {
+    printf("%s %d wrong\n", __FILE__, __LINE__);
+    return -1;
+  }
+
+  ret = get_pieces();
+  if (ret < 0) {
+    printf("%s %d wrong\n", __FILE__, __LINE__);
+    return -1;
+  }
+
+  ret = get_filename();
+  if (ret < 0) {
+    printf("%s %d wrong\n", __FILE__, __LINE__);
+    return -1;
+  }
+
+  ret = get_file_length();
+  if (ret < 0) {
+    printf("%s %d wrong\n", __FILE__, __LINE__);
+    return -1;
+  }
+
+  ret = get_infohash();
+  if (ret < 0) {
+    printf("%s %d wrong\n", __FILE__, __LINE__);
+    return -1;
+  }
+  ret = get_peerid();
+  if (ret < 0) {
+    printf("%s %d wrong\n", __FILE__, __LINE__);
+    return -1;
+  }
+
+  return 0;
+}
+
 void release_torrentfile_memory() {
   torrentfile_size = 0;
   if (torrentfile_content != NULL)
@@ -203,4 +417,18 @@ void release_torrentfile_memory() {
 
   if (filename != NULL)
     free(filename);
+
+  if (pieces != NULL)
+    free(pieces);
+
+  if (announce_list_head != NULL) {
+    Announce_list *node = announce_list_head;
+    announce_list_head = announce_list_head->next;
+    free(node);
+  }
+  if (files != NULL) {
+    Files *node = files;
+    files = files->next;
+    free(node);
+  }
 }
