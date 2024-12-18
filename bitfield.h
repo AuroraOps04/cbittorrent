@@ -16,6 +16,7 @@ void releasae_memory_in_bitfield();
 
 int print_bitfield(Bitmap *bitmap);
 int restore_bitmap();
+// 判断是否感兴趣
 int is_interested(Bitmap *dst, Bitmap *src);
 
 int get_download_piece_num();
