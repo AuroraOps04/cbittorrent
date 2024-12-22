@@ -1,6 +1,8 @@
 #include "message.h"
 #include "bitfield.h"
+#include "peer.h"
 #include <string.h>
+#include <unistd.h>
 
 #define HANDSHAKE -2
 #define KEEP_ALIVE -1
@@ -173,8 +175,35 @@ int is_complete_message(unsigned char *buff, unsigned int len, int *ok_len) {
 
   return 0;
 }
+
+/**
+ * ox19 "BitTorrent protocol" + 8 + hash_info(20) + peer_id(20)
+ */
 // info_hash 不一致就关闭 ，否则保存 peerid 如果init状态 就发送握手消息， 如果
 // HALFSHAKED 就设置成握手状态
-int process_handshake_msg(Peer *peer, unsigned char *buf, int len) { return 0; }
+int process_handshake_msg(Peer *peer, unsigned char *buf, int len) {
+  if (peer == NULL || buf == NULL || len <= 0)
+    return -1;
+
+  // check info hash
+  if (memcpy(info_hash, buf + 28, 20) != 0) {
+    close(peer->socket);
+    peer->state = CLOSING;
+    return -1;
+  }
+
+  memcpy(peer->id, buf + 48, 20);
+  peer->id[20] = '\0';
+  if (peer->state == INITIAL) {
+    // create handshake message
+    create_handshake_msg(info_hash, peer_id, peer);
+    peer->state = HANDSHAKED;
+  } else if (peer->state == HALFSHAKED) {
+    peer->state = HANDSHAKED;
+  }
+
+  peer->start_timestamp = time(NULL);
+  return 0;
+}
 
 int parse_response(Peer *peer) { return 0; }

@@ -5,7 +5,8 @@
 int int_to_char(int i, unsigned char c[4]);
 int char_to_int(unsigned char c[4]);
 
-int create_handshake_msg(char *info_hash, char *peer_id, Peer *peer);
+int create_handshake_msg(const unsigned char *info_hash, char *peer_id,
+                         Peer *peer);
 int create_keep_alive_msg(Peer *peer);
 int create_chock_interested_msg(int type, Peer *peer);
 int create_have_msg(int index, Peer *peer);
