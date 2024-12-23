@@ -17,6 +17,19 @@ int create_piece_msg(int index, int begin, unsigned char *block, int b_len,
 int create_cancel_msg(int index, int begin, int length, Peer *peer);
 int create_port_msg(int port, Peer *peer);
 
+int process_handshake_msg(Peer *peer, unsigned char *buf, int len);
+int process_keep_alive_msg(Peer *peer, unsigned char*buf, int len);
+int process_choke_msg(Peer *peer, unsigned char *buf, int len);
+int process_unchoke_msg(Peer *peer, unsigned char *buf, int len);
+int process_interested_msg(Peer *peer, unsigned char *buf, int len);
+int process_not_interested_msg(Peer *peer, unsigned char *buf, int len);
+int process_have_msg(Peer *peer, unsigned char *buf, int len);
+int process_bitfield_msg(Peer *peer, unsigned char *buf, int len);
+int process_request_msg(Peer *peer, unsigned char *buf, int len);
+int process_piece_msg(Peer *peer, unsigned char *buf, int len);
+int process_cancel_msg(Peer *peer, unsigned char *buf, int len);
+int process_port_msg(Peer *peer, unsigned char *buf, int len);
+
 /**
  * @brief  判断接收缓冲区内是否存放了一条完整的消息
  *

@@ -1,6 +1,7 @@
 #include "message.h"
 #include "bitfield.h"
 #include "peer.h"
+#include <stdio.h>
 #include <string.h>
 #include <unistd.h>
 
@@ -187,6 +188,7 @@ int process_handshake_msg(Peer *peer, unsigned char *buf, int len) {
 
   // check info hash
   if (memcpy(info_hash, buf + 28, 20) != 0) {
+    discard_send_buffer(peer);
     close(peer->socket);
     peer->state = CLOSING;
     return -1;
@@ -201,6 +203,49 @@ int process_handshake_msg(Peer *peer, unsigned char *buf, int len) {
   } else if (peer->state == HALFSHAKED) {
     peer->state = HANDSHAKED;
   }
+
+  peer->start_timestamp = time(NULL);
+  return 0;
+}
+int process_keep_alive_msg(Peer *peer, unsigned char *buf, int len) {
+  if (peer == NULL || buf == NULL)
+    return -1;
+  peer->start_timestamp = time(NULL);
+  return 0;
+}
+int process_choke_msg(Peer *peer, unsigned char *buf, int len) {
+  if (peer == NULL || buf == NULL)
+    return -1;
+  if (peer->state != CLOSING && peer->peer_choking == 0) {
+    peer->peer_choking = 1;
+    peer->last_down_timestamp = 0;
+    peer->down_count = 0;
+    peer->down_rate = 0;
+  }
+  peer->start_timestamp = time(NULL);
+  return 0;
+}
+int process_unchoke_msg(Peer *peer, unsigned char *buf, int len) {
+  if (peer == NULL || buf == NULL)
+    return -1;
+  if (peer->state != CLOSING && peer->peer_choking == 1) {
+    peer->peer_choking = 0;
+    if (peer->am_interested) {
+      // TODO: create request slice msg
+    } else {
+      peer->am_interested = is_interested(&peer->bitmap, bitmap);
+      if (peer->am_interested == 1) {
+        // TODO:
+      } else {
+        printf("Recevied unchoke but Not Interested to IP:%s \n", peer->ip);
+      }
+    }
+  }
+  peer->start_timestamp = time(NULL);
+  return 0;
+}
+
+int process_interested_msg(Peer *peer, unsigned char *buf, int len) {
 
   peer->start_timestamp = time(NULL);
   return 0;
