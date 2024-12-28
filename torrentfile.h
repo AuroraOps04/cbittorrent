@@ -4,6 +4,7 @@ typedef struct _Annouce_list {
   char announce[128];
   struct _Annouce_list *next;
 } Announce_list;
+
 typedef struct _Files {
   char path[256];
   long length;

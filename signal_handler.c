@@ -1,6 +1,8 @@
 #include "signal_handler.h"
 #include "bitfield.h"
 #include "torrentfile.h"
+#include "tracker.h"
+
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -12,6 +14,7 @@ void do_clean_work() {
   // 释放动态分配的资源
   releasae_memory_in_bitfield();
   release_torrentfile_memory();
+  release_tracker_memory();
   exit(0);
 }
 

@@ -33,7 +33,7 @@ typedef struct _Peer {
 
   Bitmap bitmap;
 
-  unsigned char *in_buff; // 从peer处获取的消息
+  unsigned char *in_buf; // 从peer处获取的消息
   int buf_len;
   unsigned char *out_msg; // 发送给peer的消息
   int msg_len;

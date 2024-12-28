@@ -10,7 +10,7 @@ int create_handshake_msg(const unsigned char *info_hash, char *peer_id,
 int create_keep_alive_msg(Peer *peer);
 int create_chock_interested_msg(int type, Peer *peer);
 int create_have_msg(int index, Peer *peer);
-int crate_bitfield_msg(char *bitfield, int bitfield_len, Peer *peer);
+int crate_bitfield_msg(unsigned char *bitfield, int bitfield_len, Peer *peer);
 int create_request_msg(int index, int begin, int length, Peer *peer);
 int create_piece_msg(int index, int begin, unsigned char *block, int b_len,
                      Peer *peer);
@@ -18,7 +18,7 @@ int create_cancel_msg(int index, int begin, int length, Peer *peer);
 int create_port_msg(int port, Peer *peer);
 
 int process_handshake_msg(Peer *peer, unsigned char *buf, int len);
-int process_keep_alive_msg(Peer *peer, unsigned char*buf, int len);
+int process_keep_alive_msg(Peer *peer, unsigned char *buf, int len);
 int process_choke_msg(Peer *peer, unsigned char *buf, int len);
 int process_unchoke_msg(Peer *peer, unsigned char *buf, int len);
 int process_interested_msg(Peer *peer, unsigned char *buf, int len);

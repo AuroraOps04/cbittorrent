@@ -15,6 +15,8 @@ add_executable(
   main.c
   torrentfile.c
   bitfield.c
+  tracker.c
+  signal_handler.c
 )
 
-target_link_libraries(${PROJECT_NAME} OpenSSL::SSL OpenSSL::Crypto)
+target_link_libraries(${PROJECT_NAME} OpenSSL::SSL OpenSSL::Crypto curl)
