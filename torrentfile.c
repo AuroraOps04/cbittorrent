@@ -1,6 +1,5 @@
 #include "torrentfile.h"
 #include <openssl/evp.h>
-#include <openssl/sha.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -205,7 +204,7 @@ int get_announce_list() {
   return 0;
 }
 
-int get_piece_lenght() {
+int get_piece_length() {
   if (torrentfile_content == NULL) {
     return -1;
   }
@@ -374,7 +373,7 @@ int parse_torrentfile(const char *filename) {
     return -1;
   }
 
-  ret = get_piece_lenght();
+  ret = get_piece_length();
   if (ret < 0) {
     printf("%s %d wrong\n", __FILE__, __LINE__);
     return -1;

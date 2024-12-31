@@ -8,7 +8,7 @@ typedef struct _Bitmap {
 
 int create_bitfield();
 int get_bit_value(Bitmap *bitmap, int index);
-int set_bit_value(Bitmap *bitmap, int index, unsigned char value);
+int set_bit_value(const Bitmap *bitmap, int index, unsigned char value);
 
 int all_zero(Bitmap *bitmap); // all set 0
 int all_set(Bitmap *bitmap);  // all set 1

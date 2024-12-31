@@ -134,7 +134,7 @@ int connect_tracker() {
   if (curl == NULL) {
     return -1;
   }
-  char *escaped_info_hash = curl_easy_escape(curl, (char *)info_hash, 20);
+  char *escaped_info_hash = curl_easy_escape(curl, info_hash, 20);
   char *escaped_peer_id = curl_easy_escape(curl, peer_id, 20);
   sprintf(url,
           "%s?info_hash=%s&peer_id=%s&ip=%s&port=%s&uploaded=%d&downloaded=%d&"
@@ -145,9 +145,9 @@ int connect_tracker() {
   curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writefunc);
   curl_easy_setopt(curl, CURLOPT_URL, url);
   curl_easy_setopt(curl, CURLOPT_WRITEDATA, data);
-  int ret = curl_easy_perform(curl);
+  const int ret = curl_easy_perform(curl);
   if (ret == CURLE_OK) {
-    printf("data %s\n", data);
+    printf("data %s\n", *data);
     process_tracker_response(data, strlen(data));
   } else {
     printf("error %s\n", curl_easy_strerror(ret));
@@ -168,6 +168,5 @@ void release_tracker_memory() {
       p = p->next;
       free(tmp);
     }
-    return;
   }
 }

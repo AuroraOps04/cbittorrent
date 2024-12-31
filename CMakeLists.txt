@@ -7,16 +7,18 @@ set(CMAKE_CXX_STANDARD c99)
 add_definitions("-Wall -g")
 set(CMAKE_BUILD_TOOL Debug)
 
-find_package(OpenSSL REQUIRED )
+find_package(OpenSSL REQUIRED)
 
 
 add_executable(
-  ${PROJECT_NAME}
-  main.c
-  torrentfile.c
-  bitfield.c
-  tracker.c
-  signal_handler.c
+        ${PROJECT_NAME}
+        main.c
+        torrentfile.c
+        bitfield.c
+        tracker.c
+        signal_handler.c
+        data.c
+        data.h
 )
 
 target_link_libraries(${PROJECT_NAME} OpenSSL::SSL OpenSSL::Crypto curl)

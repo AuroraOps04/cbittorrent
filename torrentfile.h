@@ -17,7 +17,7 @@ int find_keyword(const char *keyword, int *position);
 int get_infohash();
 int get_filename();
 int get_announce_list();
-int get_piece_lenght();
+int get_piece_length();
 int get_pieces();
 int is_multi_file();
 int get_files_length_path();

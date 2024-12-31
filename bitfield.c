@@ -65,7 +65,7 @@ int get_bit_value(Bitmap *bitmap, int index) {
   return ret;
 }
 
-int set_bit_value(Bitmap *bitmap, int index, unsigned char value) {
+int set_bit_value(const Bitmap *bitmap, const int index, const unsigned char value) {
   if (bitmap == NULL || bitmap->bitfield == NULL) {
     return -1;
   }
