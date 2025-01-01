@@ -31,10 +31,10 @@ int write_btcache_node_to_harddisk(Btcache *node);
 
 // 从  硬盘中读取一个 slice 到缓冲区,在peer需要时发送给peer
 // 要读入的slice 的 index begin length 已存入到 node 中
-int read_slice_from_harddisk(Btcache *node);
+int read_slice_from_harddisk(const Btcache *node);
 
 // 检查一个piece的数据是否正确，正确就写入硬盘
-int write_piece_to_harddisk(int sequence,Peer*peer);
+int write_piece_to_harddisk(int sequence, Peer *peer);
 
 // 从硬盘中读取一个piece的数据到缓冲区
 int read_piece_from_harddisk(Btcache *node, int index);

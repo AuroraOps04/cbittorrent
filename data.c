@@ -11,7 +11,11 @@
 #include "bitfield.h"
 #include "torrentfile.h"
 #include <sys/stat.h>
-
+#define checkError() \
+    if (ret < 0) { \
+        printf("error:%m %s:%d\n", __FILE__, __LINE__); \
+        return -1; \
+    }
 
 /**
  * 每个缓冲区节点的大小为 16KB，默认生成 1024个节点， 总大小为 16MB,
@@ -245,19 +249,45 @@ int write_btcache_node_to_harddisk(Btcache *node) {
     return -1;
 }
 
-int read_slice_from_harddisk(Btcache *node) {
+int read_slice_from_harddisk(const Btcache *node) {
     if (node == NULL || node->buff == NULL) return -1;
-    int pos = node->index * piece_length + node->begin;
-    int ret;
+    long pos = node->index * piece_length + node->begin;
+    Files *p = files;
+    long ret;
     int i = 0;
     if (!is_multi_file()) {
         ret = lseek(fds[i], pos, SEEK_SET);
-        if (ret < 0) return -1;
-        
+        checkError();
+        ret = read(fds[i], node->buff, node->length);
+        checkError();
+        return 0;
     }
-
-
-    return 0;
+    while (p != NULL) {
+        if (p->length >= pos) {
+            long left = node->length;
+            while (left > 0) {
+                if (p->length < pos) {
+                    ret = lseek(fds[i], pos - p->length, SEEK_SET);
+                    checkError();
+                    ret = read(fds[i], node->buff + node->length - left, left);
+                    checkError();
+                } else {
+                    ret = lseek(fds[i], 0,SEEK_SET);
+                    checkError();
+                    ret = read(fds[i], node->buff + node->length - left, left);
+                    checkError();
+                }
+                left -= ret;
+                p = p->next;
+                i++;
+            }
+            return 0;
+        }
+        pos -= p->length;
+        p = p->next;
+        i++;
+    }
+    return -1;
 }
 
 /**
